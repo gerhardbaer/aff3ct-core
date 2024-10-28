@@ -15,19 +15,15 @@ namespace tools
 {
 class control_flow_error : public exception
 {
-	static const std::string default_message;
+  public:
+    control_flow_error() noexcept;
+    explicit control_flow_error(std::string&& message) noexcept;
+    control_flow_error(std::string&& filename,
+                       int&& line_num,
+                       std::string&& funcname = "",
+                       std::string&& message = "") noexcept;
 
-public:
-	control_flow_error() throw();
-
-	explicit control_flow_error(const std::string &message) throw();
-
-	control_flow_error(const std::string &filename,
-	                   const int line_num,
-	                   const std::string &funcname = exception::empty_string,
-	                   const std::string &message = exception::empty_string) throw();
-
-	virtual ~control_flow_error() = default;
+    virtual ~control_flow_error() = default;
 };
 }
 }

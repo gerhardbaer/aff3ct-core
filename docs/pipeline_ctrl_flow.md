@@ -5,9 +5,9 @@
 `AFF3CT-core` allows the user to control the execution flow of sequences through
 the use of [switcher](switcher.md), however sequences are often used within the
 context of [pipelines](pipeline.md) and thus some slight behavior adjustments 
-were required for them to consistently work.
+were required for them to work consistently.
 
-## Technical Improvement
+## Technical Improvements
 
 ### Finding the Last Sub-sequence
 
@@ -71,9 +71,9 @@ Node Last_Subseq(Node n):
     As the function is recursive, it returns the result of the last path taken:
     `SS 4`, which is *correct*, **but deceptive**. It only happened to work
     because of the order in which the children of node `SS commute` were parsed.
-    If `SS 4` was parsed first then it would have returned `SS 3`, this kind of
+    If `SS 4` had been parsed first, then it would have returned `SS 3`. This kind of
     behavior is problematic as the algorithm should not depend on which
-    children is first in a list as that is not relevant to the layout of the
+    children is first in a list, as that is not relevant to the layout of the
     graph.
 
 === "No switcher"
@@ -143,11 +143,11 @@ This sub-sequence is invalid because the last `SS Branch 3` has no path to the
 
 ```python
 # Note that path_taken here is copied between recursive calls and NOT shared
-void Check_ctrl_flw(Node n, List path_taken):
+void Check_ctrl_flow(Node n, List path_taken):
     if n is not in path_taken and n is not childless
         path_taken.append(n)
         for every child c of n:
-            Check_ctrl_flw(c, path_taken)
+            Check_ctrl_flow(c, path_taken)
     else
         for i = 0, i < path_taken.size, i++:
             if path_taken[i] does not contain a switcher task:
@@ -163,14 +163,20 @@ void Check_ctrl_flw(Node n, List path_taken):
                 throw an error
 ```
 
+!!! danger
+	<u>Edit 2024-03-31</u>: We found that the previous check algorithm is not 
+	valid in the general case. For instance, in the case of nested do while
+	loops, it will raise an error when there is none. Thus, this check has
+	been disabled until a more robust solution can be found.
+
 ### Tests
 
 Some specific tests have been added to the project to validate the robustness of 
-the control flow inside a pipelie stage.
+the control flow inside a pipeline stage.
 
 === "Switch-case inside a parallel stage"
     <figure markdown>
-      ![double chain](./assets/exclusive_paths_pipeline.svg){ width="950" }
+      ![double chain](./assets/test_exclusive_paths_pipeline.svg){ width="950" }
       <figcaption>`test-exclusive-paths-pipeline`.</figcaption>
     </figure>
     ```bash
@@ -184,7 +190,7 @@ the control flow inside a pipelie stage.
 
 === "Nested loops inside a parallel stage"
     <figure markdown>
-      ![double chain](./assets/nested_loops_pipeline.svg){ width="1200" }
+      ![double chain](./assets/test_nested_loops_pipeline.svg){ width="1200" }
       <figcaption>`test-nested-loops-pipeline`.</figcaption>
     </figure>
     ```bash

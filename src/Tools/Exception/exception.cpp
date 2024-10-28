@@ -1,62 +1,66 @@
-#include "Tools/system_functions.h"
+#include <utility>
+
 #include "Tools/Exception/exception.hpp"
+#include "Tools/system_functions.h"
 
 using namespace aff3ct::tools;
 
-const std::string aff3ct::tools::exception::empty_string = "";
-bool aff3ct::tools::exception::no_backtrace = false;
-bool aff3ct::tools::exception::no_addr_to_line = true;
+bool aff3ct::tools::exception::no_stacktrace = false;
 
-exception
-::exception() throw()
-{
-}
-
-exception
-::exception(const std::string &message) throw()
-: message(message)
-#ifdef AFF3CT_CORE_BACKTRACE
-,backtrace(message + "\n" + get_back_trace(3))
-#endif
-{
-}
-
-exception
-::exception(const std::string &filename,
-            const int line_num,
-            const std::string &funcname,
-            const std::string &_message) throw()
-{
-	if (!filename.empty())
-		this->message += "In the '" + filename + "' file";
-	if (line_num >= 0)
-		this->message += " at line " + std::to_string(line_num);
-	if (!funcname.empty())
-		this->message += " ('" + funcname + "' function)";
-	this->message += ": ";
-	this->message += "\"" + _message + "\"";
-
-#ifdef AFF3CT_CORE_BACKTRACE
-	backtrace = this->message + "\n" + get_back_trace(3);
-#endif
-}
-
-const char* exception
-::what() const throw()
-{
-#ifdef AFF3CT_CORE_BACKTRACE
-	if (no_backtrace)
-		return message.c_str();
-	else if (no_addr_to_line)
-		return backtrace.c_str();
-
-	std::string* bt_a2l = const_cast<std::string*>(&backtrace_a2l);
-
-	if (bt_a2l->empty())
-		*bt_a2l = tools::addr_to_line(backtrace);
-
-	return bt_a2l->c_str();
+exception::exception() noexcept
+#ifdef AFF3CT_CORE_STACKTRACE
+  : cpptrace::exception_with_message("")
 #else
-	return message.c_str();
+  : message("")
+#endif
+{
+}
+
+exception::exception(std::string&& message) noexcept
+#ifdef AFF3CT_CORE_STACKTRACE
+  : cpptrace::exception_with_message(std::move(message))
+#else
+  : message(message)
+#endif
+{
+}
+
+exception::exception(std::string&& filename, int&& line_num, std::string&& funcname, std::string&& message) noexcept
+#ifdef AFF3CT_CORE_STACKTRACE
+  : cpptrace::exception_with_message((!filename.empty() ? "In the '" + filename + "' file" : "") +
+                                     (line_num >= 0 ? " at line " + std::to_string(line_num) : "") +
+                                     (!funcname.empty() ? " ('" + funcname + "' function)" : "") + ": " + "\"" +
+                                     message + "\"")
+#else
+  : message((!filename.empty() ? "In the '" + filename + "' file" : "") +
+            (line_num >= 0 ? " at line " + std::to_string(line_num) : "") +
+            (!funcname.empty() ? " ('" + funcname + "' function)" : "") + ": " + "\"" + message + "\"")
+#endif
+{
+}
+
+const char*
+exception::what() const noexcept
+{
+#ifdef AFF3CT_CORE_STACKTRACE
+    if (no_stacktrace)
+    {
+        return this->message();
+    }
+    else
+    {
+#ifdef AFF3CT_CORE_COLORS
+        if (what_string.empty())
+        {
+            const bool enable_color = true;
+            what_string = message() + std::string(":\n") + this->trace().to_string(enable_color);
+        }
+        return what_string.c_str();
+#else
+        return cpptrace::exception_with_message::what();
+#endif
+    }
+#else
+    return message.c_str();
 #endif
 }

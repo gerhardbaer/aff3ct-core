@@ -7,7 +7,6 @@
 
 #include <string>
 #include <typeindex>
-#include <typeindex>
 
 #include "Module/Probe/Probe.hpp"
 
@@ -17,20 +16,19 @@ namespace module
 {
 class Probe_timestamp : public Probe<uint8_t>
 {
-protected:
-	const uint64_t mod;
+  protected:
+    const uint64_t mod;
 
-public:
-	Probe_timestamp(const std::string &col_name, const uint64_t mod, tools::Reporter_probe& reporter,
-	                const int n_frames = 1);
-	Probe_timestamp(const std::string &col_name, tools::Reporter_probe& reporter, const int n_frames = 1);
+  public:
+    Probe_timestamp(const uint64_t mod, const std::string& col_name, tools::Reporter_probe* reporter = nullptr);
+    Probe_timestamp(const std::string& col_name, tools::Reporter_probe* reporter = nullptr);
 
-	virtual ~Probe_timestamp() = default;
+    virtual ~Probe_timestamp() = default;
 
-	virtual std::type_index get_datatype() const;
+    virtual void register_reporter(tools::Reporter_probe* reporter);
 
-protected:
-	virtual void _probe(const uint8_t *in, const size_t frame_id);
+  protected:
+    virtual void _probe(const uint8_t* in, const size_t frame_id);
 };
 }
 }

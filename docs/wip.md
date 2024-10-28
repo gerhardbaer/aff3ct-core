@@ -3,12 +3,13 @@
 ## Forward Socket with Control Flow
 
 Currently when `gen_processes()` is called, `select` and `commute` tasks do not 
-behave properly with `SFWD` tasks bound directly on their data sockets, indeed 
-they only rebind the first bound sockets while they should use 
-`explore_thread_rec()` to update the data pointers of every linked `SFWD`. **For 
-now, tasks bound to switchers should be `SIO`.**
+behave properly with `SFWD` tasks bound directly on their data sockets. Indeed 
+they only rebind the first bound sockets while they should use the
+[`explore_thread_rec()`](sequence.md#Explore_thread_rec) function to update the 
+data pointers of every linked `SFWD`. **For now, tasks bound to switchers should 
+be `SIO`.**
 
-## Id Updates
+## Task IDs Update
 
 When `push` and `pull` tasks are inserted into the pipeline the 
 `update_tasks_id()` method is called to assert that the task IDs are still 
@@ -141,6 +142,6 @@ E(SS 3)-.->B(SS select);
     ```
 
 With our current implementation of the DFS, Stage 2 technically has no final
-sub-sequence as every single node has atleast one child thus making the 
+sub-sequence as every single node has at least one child, thus making the 
 insertion of push tasks impossible. A solution would be to introduce a fake task 
 after each commute on their last path during pipeline creations.

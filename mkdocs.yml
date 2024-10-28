@@ -1,4 +1,4 @@
-site_name: AFF3CT-core Developer Documentation
+site_name: AFF3CT-core Documentation
 site_url: https://aff3ct.github.io/aff3ct-core/
 theme:
   logo: assets/diagram-project-solid.svg
@@ -16,26 +16,37 @@ theme:
     scheme: default
     primary: black
     secondary: black
-    hljs_style: monokai   
-  palette: 
+    hljs_style: monokai
+
+  palette:
+
+    # Palette toggle for automatic mode
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
 
     # Palette toggle for light mode
-    - scheme: default
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
       toggle:
-        icon: material/brightness-7 
+        icon: material/brightness-7
         name: Switch to dark mode
 
     # Palette toggle for dark mode
-    - scheme: slate
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
       toggle:
         icon: material/brightness-4
-        name: Switch to light mode
+        name: Switch to system preference
 
   language: en
 
 repo_url: https://github.com/aff3ct/aff3ct-core
 
 markdown_extensions:
+  - toc:
+      permalink: true
   - pymdownx.highlight:
       anchor_linenums: true
       line_spans: __span
@@ -74,14 +85,20 @@ extra_javascript:
 nav:
   - Home: 
     - index.md
-  - Basic Components:
-      - task.md
-      - module.md
-      - socket.md
-      - sequence.md
-      - pipeline.md
-      - switcher.md
-  - New Features and Discussions:
-      - socket_fwd.md
-      - pipeline_ctrl_flow.md
-      - wip.md
+  - For Users:
+    - Tests:
+      - tests_bootstrap.md
+    - Runtime:
+      - thread_pinning.md
+  - For Developers:
+      - Basic Components:
+        - task.md
+        - module.md
+        - socket.md
+        - sequence.md
+        - pipeline.md
+        - switcher.md
+      - New Features and Discussions:
+        - socket_fwd.md
+        - pipeline_ctrl_flow.md
+        - wip.md

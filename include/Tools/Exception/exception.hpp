@@ -7,40 +7,39 @@
 
 #include <exception>
 #include <string>
+#ifdef AFF3CT_CORE_STACKTRACE
+#include <cpptrace/cpptrace.hpp>
+#endif
 
 namespace aff3ct
 {
 namespace tools
 {
+#ifdef AFF3CT_CORE_STACKTRACE
+class exception : public cpptrace::exception_with_message
+{
+#else
 class exception : public std::exception
 {
-public:
-	static bool no_backtrace;
-	static bool no_addr_to_line;
+#endif
+  public:
+    static bool no_stacktrace;
 
-protected:
-	static const std::string empty_string;
-
-private:
-	std::string message;   // the message only
-#ifdef AFF3CT_CORE_BACKTRACE
-	std::string backtrace; // the message + the backtrace
-	std::string backtrace_a2l; // the message + the backtrace with addr_to_line conversion
+  private:
+#ifdef AFF3CT_CORE_STACKTRACE
+    mutable std::string what_string;
+#else
+    std::string message; // the message only
 #endif
 
-public:
-	exception() throw();
+  public:
+    exception() noexcept;
+    explicit exception(std::string&& message) noexcept;
+    exception(std::string&& filename, int&& line_num, std::string&& funcname = "", std::string&& message = "") noexcept;
 
-	explicit exception(const std::string &message) throw();
+    virtual ~exception() = default;
 
-	exception(const std::string &filename,
-	          const int line_num,
-	          const std::string &funcname,
-	          const std::string &message) throw();
-
-	virtual ~exception() = default;
-
-	virtual const char* what() const throw(); // return the message and the back trace if enabled
+    const char* what() const noexcept override; // return the message and the back trace if enabled
 };
 }
 }
@@ -54,11 +53,11 @@ public:
 #include "Tools/Exception/logic_error/logic_error.hpp"
 #include "Tools/Exception/out_of_range/out_of_range.hpp"
 #include "Tools/Exception/overflow_error/overflow_error.hpp"
+#include "Tools/Exception/processing_aborted/processing_aborted.hpp"
 #include "Tools/Exception/range_error/range_error.hpp"
 #include "Tools/Exception/runtime_error/runtime_error.hpp"
 #include "Tools/Exception/underflow_error/underflow_error.hpp"
 #include "Tools/Exception/unimplemented_error/unimplemented_error.hpp"
 #include "Tools/Exception/waiting_canceled/waiting_canceled.hpp"
-#include "Tools/Exception/processing_aborted/processing_aborted.hpp"
 
 #endif /* EXCEPTION_HPP_ */

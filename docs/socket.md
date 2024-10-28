@@ -3,10 +3,9 @@
 Sockets are used to exchange data between [tasks](task.md). There are 3 
 different types of sockets:
 
-- Input socket (`socket_t::SIN`),
-- Output socket (`socket_t::SOUT`),
-- Forward socket (`socket_t::SFWD`): read and write data (see the [forward 
-  socket](socket_fwd.md) section).
+- Input socket (`socket_t::SIN`): read only data,
+- Output socket (`socket_t::SOUT`): write only data,
+- Forward socket (`socket_t::SFWD`): read and write data.
 
 A task can have multiple sockets of different types (input, output and forward).
 This is illustrated in the following figure:
@@ -70,13 +69,15 @@ Below some examples of valid and invalids socket bindings :
 
 === "Valid bindings"
     <figure markdown>
-        ![Valid bindings](./assets/valid_bindings.svg){ width=750 }
+        ![Valid bindings](./assets/valid_bindings.svg#only-light){ width=750 }
+        ![Valid bindings](./assets/valid_bindings_neg.svg#only-dark){ width=750 }
         <figcaption>Examples of **valid** socket bindings.</figcaption>
     </figure>
 
 === "Invalid bindings"
     <figure markdown>
-        ![Invalid bindings](./assets/invalid_bindings.svg){ width=487 }
+        ![Invalid bindings](./assets/invalid_bindings.svg#only-light){ width=487 }
+        ![Invalid bindings](./assets/invalid_bindings_neg.svg#only-dark){ width=487 }
         <figcaption>Examples of **invalid** socket bindings.</figcaption>
     </figure>
 

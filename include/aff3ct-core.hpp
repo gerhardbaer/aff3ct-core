@@ -60,6 +60,9 @@
 #ifndef PROBE_HPP_
 #include <Module/Probe/Probe.hpp>
 #endif
+#ifndef PROBE_STREAM_HPP_
+#include <Module/Probe/Stream/Probe_stream.hpp>
+#endif
 #ifndef PROBE_THROUGHPUT_HPP_
 #include <Module/Probe/Throughput/Probe_throughput.hpp>
 #endif
@@ -77,6 +80,9 @@
 #endif
 #ifndef RELAYER_HPP_
 #include <Module/Relayer/Relayer.hpp>
+#endif
+#ifndef SET_HPP_
+#include <Module/Set/Set.hpp>
 #endif
 #ifndef SINK_NO_HPP
 #include <Module/Sink/NO/Sink_NO.hpp>
@@ -107,9 +113,6 @@
 #endif
 #ifndef STATELESS_HPP_
 #include <Module/Stateless/Stateless.hpp>
-#endif
-#ifndef SUBSEQUENCE_HPP_
-#include <Module/Subsequence/Subsequence.hpp>
 #endif
 #ifndef SWITCHER_HPP_
 #include <Module/Switcher/Switcher.hpp>
@@ -234,11 +237,17 @@
 #ifndef REPORTER_HPP__
 #include <Tools/Reporter/Reporter.hpp>
 #endif
+#ifndef SIGNAL_HANDLER_HPP_
+#include <Tools/Signal_handler/Signal_handler.hpp>
+#endif
 #ifndef SYSTEM_MEMORY_HPP__
 #include <Tools/System/memory.hpp>
 #endif
 #ifndef THREAD_PINNING_HPP
 #include <Tools/Thread_pinning/Thread_pinning.hpp>
+#endif
+#ifndef THREAD_PINNING_UTILS_HPP
+#include <Tools/Thread_pinning/Thread_pinning_utils.hpp>
 #endif
 
 #endif

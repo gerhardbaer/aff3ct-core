@@ -29,6 +29,29 @@ analysis-headers:
     - ./scripts/generate_aff3ct_header.sh aff3ct-core.hpp
     - diff aff3ct-core.hpp include/aff3ct-core.hpp
 
+analysis-clang-format:
+  image: ubuntu:22.04
+  stage: analysis
+  tags:
+    - x86_64
+    - linux
+    - docker
+  script:
+    - apt-get update
+    - apt-get -y install clang-format
+    - mkdir original_code
+    - cp -r include original_code
+    - cp -r src original_code
+    - cp -r tests original_code
+    - cp -r signal_tracer original_code
+    - ./scripts/apply_clang_format.sh
+    - mkdir new_code
+    - cp -r include new_code
+    - cp -r src new_code
+    - cp -r tests new_code
+    - cp -r signal_tracer new_code
+    - diff -r new_code original_code
+
 build-linux-gcc-x64-avx2:
   image: registry.gitlab.com/aff3ct/aff3ct/x86_64_ubuntu_gcc:v9.3.0
   stage: build
@@ -48,17 +71,16 @@ build-linux-gcc-x64-avx2:
     paths:
       - build_linux_gcc_x64_avx2
   script:
-    - export CC="gcc"
     - export CXX="g++"
     - export CFLAGS="-Wall -funroll-loops -m64 -mavx2 -mfma"
     - export LFLAGS="-static -static-libgcc -static-libstdc++ -Wl,--whole-archive -lrt -lpthread -Wl,--no-whole-archive"
-    - export CMAKE_OPT="-DAFF3CT_CORE_TESTS=ON -DAFF3CT_CORE_COMPILE_STATIC_LIB=ON -DAFF3CT_CORE_COMPILE_SHARED_LIB=ON"
+    - export CMAKE_OPT="-DAFF3CT_CORE_TESTS=ON -DAFF3CT_CORE_COMPILE_STATIC_LIB=ON -DAFF3CT_CORE_COMPILE_SHARED_LIB=ON -DAFF3CT_CORE_STACKTRACE=OFF"
     - export NAME="build_linux_gcc_x64_avx2"
     - source ./ci/tools/threads.sh
     - ./ci/build-linux-macos.sh
 
-build-linux-gcc-coverage:
-  image: registry.gitlab.com/aff3ct/aff3ct/x86_64_ubuntu_gcc:v9.3.0
+build-linux-gcc-coverage-regression:
+  image: registry.gitlab.com/aff3ct/aff3ct/x86_64_ubuntu_coverage
   stage: build
   variables:
     GIT_SUBMODULE_STRATEGY: recursive
@@ -70,17 +92,20 @@ build-linux-gcc-coverage:
     - linux
     - docker
   artifacts:
-    name: build
+    name: regression-code-coverage-files
     paths:
-      - build
+      - build/
+      - code_coverage_files/
   script:
-    - export CC="gcc"
     - export CXX="g++"
     - export CFLAGS="-Wall -funroll-loops -msse4.2 --coverage"
     - export LFLAGS="--coverage"
-    - export CMAKE_OPT="-DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG=-O0 -DAFF3CT_CORE_TESTS=ON -DAFF3CT_CORE_COMPILE_STATIC_LIB=ON -DAFF3CT_CORE_COMPILE_SHARED_LIB=ON"
+    - export CMAKE_OPT="-DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG=-O0 -DAFF3CT_CORE_TESTS=ON -DAFF3CT_CORE_COMPILE_STATIC_LIB=ON -DAFF3CT_CORE_COMPILE_SHARED_LIB=ON -DAFF3CT_CORE_LINK_HWLOC=ON"
     - source ./ci/tools/threads.sh
     - ./ci/build-linux-macos.sh
+    - ./ci/test-coverage-regression.sh
+    - rm -rf build/bin
+    - rm -rf build/lib
 
 build-linux-clang:
   image: registry.gitlab.com/aff3ct/aff3ct/x86_64_ubuntu_clang:v10.0.0
@@ -101,7 +126,6 @@ build-linux-clang:
     paths:
       - build_linux_clang
   script:
-    - export CC="clang"
     - export CXX="clang++"
     - export CFLAGS="-Wall -Wno-overloaded-virtual -funroll-loops"
     - export CMAKE_OPT="-DAFF3CT_CORE_TESTS=ON -DAFF3CT_CORE_COMPILE_STATIC_LIB=ON -DAFF3CT_CORE_COMPILE_SHARED_LIB=ON"
@@ -128,7 +152,6 @@ build-linux-icpc:
     paths:
       - build_linux_icpc
   script:
-    - export CC="icc"
     - export CXX="icpc"
     - export CFLAGS="-Wall -funroll-loops -march=native -std=c++11"
     - export CMAKE_OPT="-DAFF3CT_CORE_TESTS=ON -DAFF3CT_CORE_COMPILE_STATIC_LIB=ON -DAFF3CT_CORE_COMPILE_SHARED_LIB=ON"
@@ -136,28 +159,34 @@ build-linux-icpc:
     - source ./ci/tools/threads.sh
     - ./ci/build-linux-macos.sh
 
-test-coverage-regression:
-  image: registry.gitlab.com/aff3ct/aff3ct/x86_64_ubuntu_coverage
+test-memcheck-regression:
+  image: registry.gitlab.com/aff3ct/aff3ct/x86_64_ubuntu_valgrind
   stage: test
   variables:
     GIT_SUBMODULE_STRATEGY: recursive
   except:
     - schedules
   needs:
-    - job: build-linux-gcc-coverage
-      artifacts: true
+    - job: analysis-headers
+      artifacts: false
   tags:
     - x86_64
-    - sse4.2
+    - avx2
     - linux
     - docker
   artifacts:
-     name: code-coverage-files
-     when: always
-     paths:
-      - code_coverage_files/
+    name: test-memcheck-regression
+    when: always
+    paths:
+      - build/Testing
   script:
-    - ./ci/test-coverage-regression.sh
+    - export CXX="g++"
+    - export CFLAGS="-Wall -funroll-loops -m64 -mavx2 -mfma"
+    - export CMAKE_OPT="-DCMAKE_BUILD_TYPE=RelWithDebInfo -DAFF3CT_CORE_TESTS=ON -DAFF3CT_CORE_COMPILE_STATIC_LIB=ON -DAFF3CT_CORE_COMPILE_SHARED_LIB=ON -DAFF3CT_CORE_LINK_HWLOC=ON"
+    - source ./ci/tools/threads.sh
+    - ./ci/build-linux-macos.sh
+    - cd build
+    - ctest -LE "^skip-memcheck$" -T memcheck
 
 coverage-linux:
   image: registry.gitlab.com/aff3ct/aff3ct/x86_64_ubuntu_coverage
@@ -165,7 +194,7 @@ coverage-linux:
   except:
     - schedules
   needs:
-    - job: test-coverage-regression
+    - job: build-linux-gcc-coverage-regression
       artifacts: true
   tags:
     - x86_64

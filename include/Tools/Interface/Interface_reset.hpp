@@ -11,8 +11,9 @@ namespace tools
 {
 class Interface_reset
 {
-public:
-	virtual void reset() = 0;
+  public:
+    virtual void reset() = 0;
+    virtual ~Interface_reset() = default;
 };
 
 }
